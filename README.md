@@ -163,7 +163,7 @@ No Codex, a invocação documentada de uma skill é diferente de um comando slas
 O código completo da equipe está na pasta [dataengineer/](dataengineer/). Para baixar o projeto, use **Code → Download ZIP** no GitHub ou clone o repositório:
 
 ```bash
-git clone https://github.com/Krlos0007542/master-data-engineer.git
+git clone https://github.com/carlos-dataengineer/master-data-engineer.git
 ```
 
 No Windows, abra o PowerShell dentro da pasta `dataengineer` e execute:
