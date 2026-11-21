@@ -18,6 +18,19 @@ if (-not (Test-Path (Join-Path $SkillSource 'SKILL.md'))) {
     throw "Não encontrei a skill em $SkillSource"
 }
 
+if (-not (Test-Path $ClaudeAgentsSource -PathType Container)) {
+    throw "Não encontrei os perfis de agentes Claude Code em $ClaudeAgentsSource"
+}
+if (-not (Test-Path $CodexAgentsSource -PathType Container)) {
+    throw "Não encontrei os perfis de agentes Codex em $CodexAgentsSource"
+}
+if (@(Get-ChildItem -LiteralPath $ClaudeAgentsSource -Filter '*.md' -File).Count -eq 0) {
+    throw "Nenhum perfil de agente Claude Code foi encontrado em $ClaudeAgentsSource"
+}
+if (@(Get-ChildItem -LiteralPath $CodexAgentsSource -Filter '*.toml' -File).Count -eq 0) {
+    throw "Nenhum perfil de agente Codex foi encontrado em $CodexAgentsSource"
+}
+
 if ($Scope -eq 'Project') {
     if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
         throw 'Informe -ProjectPath quando usar -Scope Project.'
