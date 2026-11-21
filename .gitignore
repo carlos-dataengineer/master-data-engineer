@@ -1,0 +1,21 @@
+# Local operator memory (never commit)
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+.dataengineer-memory/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Local exports / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
