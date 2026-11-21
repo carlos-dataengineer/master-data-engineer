@@ -1,0 +1,6 @@
+{
+  "name": "dataengineer",
+  "version": "0.2.0",
+  "description": "Equipe sênior de Engenharia de Dados para Databricks: construir, revisar e depurar pipelines.",
+  "skills": "./skills/"
+}
