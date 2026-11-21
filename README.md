@@ -160,15 +160,13 @@ No Codex, a invocação documentada de uma skill é diferente de um comando slas
 
 ## Instalação
 
-O pacote de implementação está disponível aqui:
+O código completo da equipe está na pasta [dataengineer/](dataengineer/). Para baixar o projeto, use **Code → Download ZIP** no GitHub ou clone o repositório:
 
-**[Baixar DataEngineer v0.2.0](downloads/dataengineer-v0.2.0-source.zip)**
+```bash
+git clone https://github.com/Krlos0007542/master-data-engineer.git
+```
 
-No Windows:
-
-1. Baixe e extraia o ZIP.
-2. Abra o PowerShell dentro da pasta `dataengineer`.
-3. Execute:
+No Windows, abra o PowerShell dentro da pasta `dataengineer` e execute:
 
 ```powershell
 .\tools\install-dataengineer.ps1 -Scope User
