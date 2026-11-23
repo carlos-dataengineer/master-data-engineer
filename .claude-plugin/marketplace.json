@@ -1,0 +1,17 @@
+{
+  "name": "master-data-engineer",
+  "owner": { "name": "carlos-dataengineer" },
+  "metadata": {
+    "description": "Equipe de agentes de IA para Engenharia de Dados no Databricks (Python, PySpark, SQL) com painel em tempo real."
+  },
+  "plugins": [
+    {
+      "name": "dataengineer",
+      "source": "./dataengineer",
+      "description": "Coordenador + 8 especialistas para construir, revisar e depurar pipelines Databricks.",
+      "version": "0.3.0",
+      "license": "MIT",
+      "keywords": ["data-engineering", "databricks", "pyspark", "sql", "agents"]
+    }
+  ]
+}

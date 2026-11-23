@@ -1,7 +1,7 @@
 ---
 name: dataengineer
 description: Equipe sênior de Engenharia de Dados para Databricks. Constrói pipelines, revisa pipelines existentes e corrige bugs com Python, PySpark e SQL.
-argument-hint: "[construir | revisar | depurar]"
+argument-hint: "[construir | revisar | depurar | painel]"
 disable-model-invocation: true
 ---
 
@@ -18,6 +18,8 @@ Toda ativação começa perguntando qual trabalho será realizado. Mesmo que o u
 3. Corrigir um bug ou investigar uma falha (debugging).
 
 Não comece a explorar ou alterar arquivos antes da escolha do modo. Depois da resposta, siga o playbook correspondente sem repetir a pergunta.
+
+Exceção: se o argumento for `painel` (ou o usuário pedir só para abrir o painel), execute `team_board.py ensure --open`, informe o endereço e encerre sem perguntar o modo.
 
 ## Princípios
 
@@ -49,6 +51,18 @@ Após a escolha do modo:
 10. O SQLite não é criptografado automaticamente. Trechos recuperados podem integrar o prompt enviado ao provedor do modelo conforme as regras do host.
 
 Consulte references/CONTEXTUAL-LEARNING.md para comandos, armazenamento, privacidade, exportação e exclusão.
+
+## Painel da equipe (tempo real)
+
+A equipe publica o próprio andamento em um painel local (http://127.0.0.1:47821) para o operador acompanhar a missão, a etapa atual e a tarefa de cada agente. O script fica em `scripts/team_board.py`, ao lado de `contextual_memory.py`. Use o Python disponível (`python`, `python3` ou `py -3`).
+
+1. Logo após a escolha do modo: `team_board.py ensure` (sobe o painel se preciso) e `team_board.py start --mode <construir|revisar|depurar> --title "<objetivo em poucas palavras>" --project "<pasta do projeto>" --host <claude|codex>`. Mostre o endereço do painel ao operador uma única vez.
+2. A cada etapa: `team_board.py stage <contexto|memoria|selecao|execucao|validacao|consolidacao|entrega> [--note "..."]`.
+3. Ao delegar: `team_board.py task T<n> --agent <agente> --status queued --title "<tarefa>"`; quando o agente começar, `--status running`; ao terminar, `--status done --note "<resultado curto>"`. Use `review` quando o resultado aguardar revisão, `blocked` quando depender do operador e `failed` quando falhar. Se o coordenador fizer um trabalho sozinho, use `--agent coordinator`.
+4. Avisos relevantes ao operador: `team_board.py note "<texto>"`.
+5. No fim: `team_board.py finish --summary "<resultado>"` (ou `--status failed|cancelled`).
+
+No Claude Code, se os hooks do instalador estiverem ativos, o início e o fim de cada subagente também são registrados automaticamente; continue registrando as etapas e os títulos das tarefas. Títulos e notas devem ser curtos e sanitizados: nada de segredos, dados pessoais, linhas de tabelas ou caminhos sensíveis. O painel é auxiliar: se um comando falhar, siga o trabalho normalmente e não insista.
 
 ## Equipe de especialistas
 

@@ -1,6 +1,6 @@
 # DataEngineer — equipe de Engenharia de Dados para Databricks
 
-Versão: 0.2.0
+Versão: 0.3.0
 
 A equipe é coordenada por uma skill principal e especializada em construir, revisar e depurar pipelines de dados no Databricks. Python, PySpark e SQL são as linguagens prioritárias.
 
@@ -13,21 +13,23 @@ A skill pergunta qual dos três modos será executado: construção de pipeline 
 
 ## Instalação
 
-Abra o PowerShell nesta pasta e execute:
+Use o instalador da raiz do repositório (um comando, Claude Code e Codex):
 
 ```powershell
-.\tools\install-dataengineer.ps1 -Scope User
+irm https://raw.githubusercontent.com/carlos-dataengineer/master-data-engineer/main/install.ps1 | iex
 ```
 
-Para instalar em um projeto específico:
-
-```powershell
-.\tools\install-dataengineer.ps1 -Scope Project -ProjectPath "C:\caminho\do\projeto"
+```bash
+curl -fsSL https://raw.githubusercontent.com/carlos-dataengineer/master-data-engineer/main/install.sh | bash
 ```
 
-Por padrão, o instalador não sobrescreve instalações existentes. Use -Overwrite conscientemente.
+A instalação também gera o Painel da equipe (`~/MasterDataEngineer/painel.html`) e o abre em http://127.0.0.1:47821. O antigo `tools/install-dataengineer.ps1` continua funcionando e repassa os parâmetros para o novo instalador.
 
 A instalação não executa pipelines, não acessa workspaces Databricks, não cria tabelas e não altera permissões.
+
+## Painel da equipe
+
+`skills/dataengineer/scripts/team_board.py` registra missão, etapas e tarefas de cada agente; `assets/painel.html` mostra tudo ao vivo. Veja ../docs/painel.md.
 
 ## Aprendizado contextual persistente
 

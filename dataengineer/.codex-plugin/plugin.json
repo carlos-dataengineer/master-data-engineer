@@ -1,6 +1,11 @@
 {
   "name": "dataengineer",
-  "version": "0.2.0",
-  "description": "Equipe sênior de Engenharia de Dados para Databricks: construir, revisar e depurar pipelines.",
-  "skills": "./skills/"
+  "version": "0.3.0",
+  "description": "Equipe sênior de Engenharia de Dados para Databricks: construir, revisar e depurar pipelines, com painel da equipe em tempo real.",
+  "skills": "./skills/",
+  "author": {
+    "name": "carlos-dataengineer"
+  },
+  "homepage": "https://github.com/carlos-dataengineer/master-data-engineer",
+  "license": "MIT"
 }

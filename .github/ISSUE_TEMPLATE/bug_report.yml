@@ -1,0 +1,39 @@
+name: Relatar um problema
+description: Algo não funcionou na instalação, na skill, nos agentes ou no painel.
+labels: [bug]
+body:
+  - type: dropdown
+    id: host
+    attributes:
+      label: Onde aconteceu
+      options: [Claude Code, Codex, Painel da equipe, Instalador]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versão
+      description: Conteúdo de ~/MasterDataEngineer/VERSION
+      placeholder: 0.3.0
+  - type: input
+    id: os
+    attributes:
+      label: Sistema operacional e versão do Python
+      placeholder: Windows 11, Python 3.12
+  - type: textarea
+    id: what
+    attributes:
+      label: O que aconteceu e o que você esperava
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Como reproduzir
+      placeholder: 1. ... 2. ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Mensagens de erro
+      description: Remova segredos, nomes de tabelas sensíveis e dados reais antes de colar.
+      render: text
