@@ -183,6 +183,11 @@ tbody tr.sel{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .toast.on{opacity:1}
 .offbanner{margin-top:14px;border:1px solid color-mix(in srgb,var(--blocked) 45%,var(--line));background:color-mix(in srgb,var(--blocked) 8%,var(--panel));border-radius:12px;padding:10px 14px;font-size:13px;color:var(--text);display:none}
 .offbanner.on{display:block}
+.demobanner{margin-top:14px;border:1px solid color-mix(in srgb,var(--review) 55%,var(--line));background:color-mix(in srgb,var(--review) 12%,var(--panel));border-radius:12px;padding:10px 14px;font-size:13.5px;display:none;align-items:center;gap:12px;flex-wrap:wrap}
+.demobanner.on{display:flex}
+.demobanner b{color:var(--text)}
+.demobanner button{margin-left:auto;border:1px solid var(--review);background:transparent;color:var(--text);border-radius:8px;padding:5px 12px;cursor:pointer;font-weight:600}
+.b-demo{background:rgba(168,85,247,.18);color:#c084fc;border-color:rgba(168,85,247,.45)}
 .offbanner code{font:12px var(--mono)}
 .view{display:none}.view.on{display:block}
 footer{max-width:1480px;margin:0 auto;padding:6px 20px 24px;color:var(--faint);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
@@ -219,6 +224,7 @@ body.tv .wrap{max-width:none}
 </header>
 
 <div class="wrap">
+  <div class="demobanner" id="demobanner"><span>🎬 <b>Modo demonstração.</b> Esta missão é fictícia, só para você conhecer o painel; nenhum agente está trabalhando. As suas missões reais aparecem aqui quando você aciona <code>/dataengineer</code>.</span><button id="demoExit">Sair da demonstração (D)</button></div>
   <div class="offbanner" id="offbanner"></div>
   <div class="searchbar" id="searchbar"><input id="search" placeholder="Filtrar tarefas por título, agente ou nota… (Esc limpa)" autocomplete="off"></div>
   <div id="app"></div>
@@ -338,7 +344,7 @@ window.MDE_CONFIG = /*__MDE_CONFIG__*/null;
   function startDemo() {
     const begin = frames => {
       if (!frames || !frames.length) { toast("Demonstração indisponível"); return; }
-      ui.demo = true; ui.demoIdx = 0; $("#btnDemo").classList.add("on"); $("#btnDemo").textContent = "■ Demo";
+      ui.demo = true; ui.demoIdx = 0; $("#demobanner").classList.add("on"); $("#btnDemo").classList.add("on"); $("#btnDemo").textContent = "■ Demo";
       setConn("demo", "Demonstração");
       const step = () => {
         if (!ui.demo) return;
@@ -353,7 +359,7 @@ window.MDE_CONFIG = /*__MDE_CONFIG__*/null;
     else fetch("/api/demo").then(r => r.json()).then(begin).catch(() => toast("Demonstração indisponível"));
   }
   function stopDemo() {
-    ui.demo = false; clearTimeout(ui.demoTimer); $("#btnDemo").classList.remove("on"); $("#btnDemo").textContent = "▶ Demo";
+    ui.demo = false; clearTimeout(ui.demoTimer); $("#demobanner").classList.remove("on"); $("#btnDemo").classList.remove("on"); $("#btnDemo").textContent = "▶ Demo";
     if (CFG.mode === "live") { setConn(ui.live ? "live" : "off", ui.live ? "Ao vivo" : "Reconectando…"); reconnect(); }
     else { setConn("off", "Offline"); ui.state = CFG.snapshot; render(); }
   }
@@ -398,7 +404,7 @@ window.MDE_CONFIG = /*__MDE_CONFIG__*/null;
     }).join("");
     return `<section class="mission">
       <div>
-        <div class="mtitle"><span class="badge b-${esc(run.mode)}">${esc(run.mode_label)}</span><h1>${esc(run.title)}</h1>
+        <div class="mtitle">${ui.demo ? `<span class="badge b-demo">Demonstração · fictícia</span>` : ""}<span class="badge b-${esc(run.mode)}">${esc(run.mode_label)}</span><h1>${esc(run.title)}</h1>
           <span class="chip s-${run.status === "active" ? "running" : run.status === "done" ? "done" : "failed"}">${esc(RUN_STATUS[run.status] || run.status)}</span></div>
         <div class="meta">
           ${run.project ? `<span>Projeto <b>${esc(run.project)}</b></span>` : ""}
@@ -541,6 +547,7 @@ window.MDE_CONFIG = /*__MDE_CONFIG__*/null;
   document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => setView(b.dataset.view));
   $("#btnTheme").onclick = () => { ui.theme = ui.theme === "dark" ? "light" : "dark"; localSet("mde.theme", ui.theme); applyTheme(); };
   $("#btnDemo").onclick = () => ui.demo ? stopDemo() : startDemo();
+  $("#demoExit").onclick = () => stopDemo();
   $("#btnHelp").onclick = () => toggleHelp(true);
   $("#help").onclick = e => { if (e.target.id === "help") toggleHelp(false); };
 
@@ -564,7 +571,7 @@ window.MDE_CONFIG = /*__MDE_CONFIG__*/null;
       ob.innerHTML = `O servidor do painel não está rodando, então esta é a última foto salva${CFG.demo && CFG.demo.length ? " (ou a demonstração, tecla <b>D</b>)" : ""}. Para acompanhar ao vivo, use o atalho <b>Abrir painel</b> na pasta MasterDataEngineer ou acione <code>/dataengineer</code>: a equipe sobe o painel sozinha.`;
       ui.state = CFG.snapshot && CFG.snapshot.run ? CFG.snapshot : null;
       render();
-      if (!ui.state || params.get("demo") === "1") startDemo();
+      if (params.get("demo") === "1") startDemo();
     });
   }
 })();
