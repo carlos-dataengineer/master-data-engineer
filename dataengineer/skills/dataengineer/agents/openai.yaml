@@ -1,0 +1,6 @@
+interface:
+  display_name: "Master Data Engineer"
+  short_description: "Equipe de Engenharia de Dados para Databricks: construir, revisar e depurar pipelines (Python, PySpark, SQL) com painel em tempo real"
+  default_prompt: "Use $dataengineer para acionar a equipe de Engenharia de Dados."
+policy:
+  allow_implicit_invocation: false

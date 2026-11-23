@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel da equipe · Master Data Engineer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9.5v13L16 30 3 22.5v-13z' fill='%237c8cff'/%3E%3Cpath d='M10 12h12M10 16h12M10 20h8' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0a0e16;--bg2:#0d1320;--panel:#111827;--panel2:#0f1624;--line:#1e293b;--line2:#273449;
+  --text:#e6edf7;--muted:#8796ad;--faint:#5a6a83;--accent:#7c8cff;--accent2:#a5b4fc;
+  --running:#3b82f6;--queued:#64748b;--review:#a855f7;--done:#22c55e;--blocked:#f59e0b;--failed:#ef4444;--idle:#334155;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 8px 24px rgba(0,0,0,.25);
+  --radius:14px;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f4f6fb;--bg2:#eef2f8;--panel:#ffffff;--panel2:#f8fafd;--line:#e2e8f0;--line2:#d5dde9;
+  --text:#0f172a;--muted:#55657d;--faint:#8a98ad;--accent:#4f5bd5;--accent2:#4f5bd5;--idle:#cbd5e1;
+  --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px rgba(15,23,42,.06);color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(1200px 500px at 10% -10%,rgba(124,140,255,.10),transparent 60%),var(--bg);color:var(--text);
+  font:14px/1.45 Inter,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.wrap{max-width:1480px;margin:0 auto;padding:0 20px 28px}
+/* topo */
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
+.top{max-width:1480px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:none}
+.brand b{font-size:15px;letter-spacing:.2px;white-space:nowrap}
+.brand span{display:block;font-size:12px;color:var(--muted);white-space:nowrap}
+nav.tabs{display:flex;gap:4px;margin-left:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:3px}
+nav.tabs button{border:0;background:transparent;padding:6px 12px;border-radius:7px;color:var(--muted);cursor:pointer;display:flex;gap:8px;align-items:center}
+nav.tabs button kbd{font:11px var(--mono);color:var(--faint);border:1px solid var(--line2);border-radius:4px;padding:0 4px}
+nav.tabs button.on{background:var(--panel);color:var(--text);box-shadow:var(--shadow)}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);font-size:12px;color:var(--muted);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.pill.live .dot{background:var(--done);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:ping 1.6s infinite}
+.pill.demo .dot{background:var(--review)}
+.pill.off .dot{background:var(--blocked)}
+.pill.paused .dot{background:var(--blocked);animation:none}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}80%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.clock{font:12px var(--mono);color:var(--muted)}
+.iconbtn{border:1px solid var(--line);background:var(--panel2);border-radius:9px;height:32px;padding:0 10px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.iconbtn:hover{color:var(--text);border-color:var(--line2)}
+.iconbtn.on{color:var(--text);border-color:var(--accent)}
+/* missão */
+.mission{margin-top:18px;display:grid;grid-template-columns:1fr auto;gap:18px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.mtitle{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mtitle h1{font-size:20px;margin:0;letter-spacing:-.2px}
+.badge{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:6px;border:1px solid transparent}
+.b-construir{background:rgba(59,130,246,.14);color:#60a5fa;border-color:rgba(59,130,246,.3)}
+.b-revisar{background:rgba(168,85,247,.14);color:#c084fc;border-color:rgba(168,85,247,.3)}
+.b-depurar{background:rgba(239,68,68,.13);color:#f87171;border-color:rgba(239,68,68,.3)}
+.b-livre{background:rgba(100,116,139,.16);color:var(--muted);border-color:var(--line2)}
+:root[data-theme="light"] .b-construir{color:#1d4ed8}:root[data-theme="light"] .b-revisar{color:#7e22ce}:root[data-theme="light"] .b-depurar{color:#b91c1c}
+.meta{margin-top:6px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.meta b{color:var(--text);font-weight:500}
+.prog{margin-top:14px;display:flex;align-items:center;gap:12px}
+.bar{flex:1;height:8px;border-radius:99px;background:var(--bg2);overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#38bdf8);border-radius:99px;transition:width .6s ease}
+.prog span{font:600 13px var(--mono);min-width:44px;text-align:right}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(88px,1fr));gap:10px;align-self:center}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px 12px;min-width:92px}
+.kpi small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11.5px}
+.kpi b{display:block;font-size:22px;line-height:1.2;margin-top:2px;font-variant-numeric:tabular-nums}
+/* etapas */
+.steps{margin-top:14px;display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.step{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px;min-height:66px}
+.step .n{font:600 11px var(--mono);color:var(--faint)}
+.step .l{font-size:12.5px;font-weight:600;margin-top:2px}
+.step .s{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step.done{border-color:color-mix(in srgb,var(--done) 35%,var(--line))}
+.step.done .n{color:var(--done)}
+.step.running{border-color:var(--running);box-shadow:0 0 0 3px color-mix(in srgb,var(--running) 18%,transparent)}
+.step.running .n{color:var(--running)}
+.step.failed{border-color:var(--failed)}
+.step.running::after{content:"";position:absolute;left:10px;right:10px;bottom:6px;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--running),transparent);background-size:200% 100%;animation:sweep 1.6s linear infinite}
+@keyframes sweep{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* grade principal */
+.grid{margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card>h2{margin:0;padding:14px 16px 10px;font-size:13px;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.card>h2 .cnt{font:600 11px var(--mono);color:var(--faint);text-transform:none}
+.team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0 16px 16px}
+.agent{position:relative;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:12px 12px 11px;min-height:132px;display:flex;flex-direction:column;gap:8px;overflow:hidden;transition:border-color .3s,opacity .3s}
+.agent.idle{opacity:.55}
+.agent.running{border-color:color-mix(in srgb,var(--running) 60%,var(--line))}
+.agent.running::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:linear-gradient(90deg,transparent,var(--running),transparent);background-size:200% 100%;animation:sweep 1.4s linear infinite}
+.agent.review{border-color:color-mix(in srgb,var(--review) 55%,var(--line))}
+.agent.blocked{border-color:color-mix(in srgb,var(--blocked) 60%,var(--line))}
+.agent.failed{border-color:color-mix(in srgb,var(--failed) 60%,var(--line))}
+.ahead{display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font:700 12px var(--mono);color:#fff;flex:none}
+.aname{min-width:0;flex:1}
+.aname b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aname small{display:block;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-running{color:#60a5fa;background:rgba(59,130,246,.14)}
+.s-queued{color:#94a3b8;background:rgba(100,116,139,.16)}
+.s-review{color:#c084fc;background:rgba(168,85,247,.14)}
+.s-done{color:#4ade80;background:rgba(34,197,94,.13)}
+.s-blocked{color:#fbbf24;background:rgba(245,158,11,.14)}
+.s-failed{color:#f87171;background:rgba(239,68,68,.14)}
+.s-idle{color:var(--faint);background:rgba(100,116,139,.10)}
+:root[data-theme="light"] .s-running{color:#1d4ed8}:root[data-theme="light"] .s-review{color:#7e22ce}:root[data-theme="light"] .s-done{color:#15803d}
+:root[data-theme="light"] .s-blocked{color:#b45309}:root[data-theme="light"] .s-failed{color:#b91c1c}:root[data-theme="light"] .s-queued{color:#475569}
+.s-running.chip::before{animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.atask{font-size:13px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:35px}
+.atask.empty{color:var(--faint)}
+.afoot{margin-top:auto;display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11.5px}
+.afoot span:first-child{font-family:var(--mono)}
+/* feed */
+.feed{max-height:640px;overflow:auto;padding:0 8px 10px}
+.fi{display:grid;grid-template-columns:46px 10px 1fr;gap:8px;padding:8px;border-radius:9px;align-items:start;animation:fadein .5s ease}
+.fi:hover{background:var(--panel2)}
+.fi time{font:11.5px var(--mono);color:var(--faint);padding-top:1px}
+.fi .dot{margin-top:6px}
+.fi p{margin:0;font-size:12.8px}
+.fi p b{font-weight:600}
+@keyframes fadein{from{background:color-mix(in srgb,var(--accent) 14%,transparent)}to{background:transparent}}
+/* kanban */
+.kanban{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:16px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);min-height:300px;display:flex;flex-direction:column}
+.col h3{margin:0;padding:12px 14px;font-size:12.5px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+.col h3 em{font:600 11px var(--mono);font-style:normal;color:var(--faint);margin-left:auto}
+.col .list{padding:10px;display:flex;flex-direction:column;gap:8px}
+.task{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--c,var(--accent));border-radius:10px;padding:10px 11px}
+.task .tt{font-size:13px;font-weight:500}
+.task .tm{display:flex;align-items:center;gap:6px;margin-top:7px;color:var(--muted);font-size:11.5px}
+.task .tm .av{width:20px;height:20px;border-radius:6px;font-size:9px}
+.task .tn{margin-top:6px;color:var(--muted);font-size:12px;border-top:1px dashed var(--line2);padding-top:6px}
+.task .id{font:11px var(--mono);color:var(--faint);margin-left:auto}
+.empty-col{color:var(--faint);font-size:12px;text-align:center;padding:24px 8px}
+/* linha do tempo */
+.tl{padding:6px 16px 18px}
+.tl .axis{position:relative;height:22px;margin-left:190px;border-bottom:1px solid var(--line);font:11px var(--mono);color:var(--faint)}
+.tl .axis span{position:absolute;top:2px;transform:translateX(-50%)}
+.lane{display:grid;grid-template-columns:190px 1fr;align-items:center;min-height:42px;border-bottom:1px dashed var(--line)}
+.lane .who{display:flex;align-items:center;gap:8px;font-size:12.5px;min-width:0}
+.lane .who .av{width:24px;height:24px;border-radius:7px;font-size:10px}
+.lane .who b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{position:relative;height:30px}
+.seg{position:absolute;top:5px;height:20px;border-radius:6px;font-size:11px;line-height:20px;padding:0 7px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:6px;cursor:default}
+.seg.running{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.14) 0 8px,transparent 8px 16px);animation:stripes 1s linear infinite;background-size:22px 22px}
+@keyframes stripes{to{background-position:22px 0}}
+.nowline{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);opacity:.7}
+/* histórico */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+th{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--panel2)}
+tbody tr.sel{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.mini{width:90px;height:6px;border-radius:9px;background:var(--bg2);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px}
+.mini i{display:block;height:100%;background:var(--accent)}
+/* vazio, busca, ajuda */
+.emptystate{margin:60px auto;max-width:640px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:40px 32px;box-shadow:var(--shadow)}
+.emptystate h2{margin:12px 0 8px;font-size:22px}
+.emptystate p{color:var(--muted);margin:6px 0}
+.emptystate code,.help code{font:12.5px var(--mono);background:var(--panel2);border:1px solid var(--line);padding:2px 6px;border-radius:6px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;padding:9px 16px;cursor:pointer;font-weight:600;margin-top:16px}
+.searchbar{display:none;margin-top:14px}
+.searchbar.on{display:flex}
+.searchbar input{flex:1;background:var(--panel);border:1px solid var(--line2);color:var(--text);border-radius:10px;padding:10px 14px;font:inherit;outline:none}
+.searchbar input:focus{border-color:var(--accent)}
+.overlay{position:fixed;inset:0;background:rgba(5,8,14,.6);display:none;place-items:center;z-index:50;padding:20px}
+.overlay.on{display:grid}
+.help{background:var(--panel);border:1px solid var(--line2);border-radius:16px;max-width:760px;width:100%;padding:22px 24px;box-shadow:0 30px 80px rgba(0,0,0,.4);max-height:90vh;overflow:auto}
+.help h2{margin:0 0 4px;font-size:18px}
+.help .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+.help h3{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.3px;margin:0 0 8px}
+.help dl{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin:0;font-size:13px}
+.help dt kbd{font:12px var(--mono);border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;padding:1px 7px;background:var(--panel2)}
+.help pre{font:12px/1.6 var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow:auto;margin:0}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line2);border-radius:10px;padding:8px 14px;font-size:13px;box-shadow:var(--shadow);opacity:0;transition:opacity .3s;z-index:60;pointer-events:none}
+.toast.on{opacity:1}
+.offbanner{margin-top:14px;border:1px solid color-mix(in srgb,var(--blocked) 45%,var(--line));background:color-mix(in srgb,var(--blocked) 8%,var(--panel));border-radius:12px;padding:10px 14px;font-size:13px;color:var(--text);display:none}
+.offbanner.on{display:block}
+.offbanner code{font:12px var(--mono)}
+.view{display:none}.view.on{display:block}
+footer{max-width:1480px;margin:0 auto;padding:6px 20px 24px;color:var(--faint);font-size:12px;display:flex;gap:14px;flex-wrap:wrap}
+footer kbd{font:11px var(--mono);border:1px solid var(--line2);border-radius:4px;padding:0 4px}
+/* modo TV */
+body.tv header nav.tabs,body.tv footer,body.tv .iconbtn.hide-tv{display:none}
+body.tv{font-size:15.5px}
+body.tv .wrap{max-width:none}
+@media (max-width:1180px){.grid{grid-template-columns:1fr}.team{grid-template-columns:repeat(2,minmax(0,1fr))}.steps{grid-template-columns:repeat(4,1fr)}.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}.mission{grid-template-columns:1fr}}
+@media (max-width:720px){.team{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,1fr)}.kanban{grid-template-columns:1fr}nav.tabs{display:none}.kpis{grid-template-columns:repeat(3,1fr)}.clock{display:none}.help .cols{grid-template-columns:1fr}.tl .axis{margin-left:120px}.lane{grid-template-columns:120px 1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 29 9.5v13L16 30 3 22.5v-13z" fill="var(--accent)"/><path d="M10 12h12M10 16h12M10 20h8" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <div><b>Master Data Engineer</b><span>Painel da equipe</span></div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button data-view="overview" class="on">Visão geral <kbd>1</kbd></button>
+      <button data-view="tasks">Tarefas <kbd>2</kbd></button>
+      <button data-view="timeline">Linha do tempo <kbd>3</kbd></button>
+      <button data-view="history">Histórico <kbd>4</kbd></button>
+    </nav>
+    <div class="spacer"></div>
+    <span id="conn" class="pill off"><span class="dot"></span><span id="connText">Conectando…</span></span>
+    <span class="clock" id="clock">--:--:--</span>
+    <button class="iconbtn hide-tv" id="btnDemo" title="Demonstração (D)">▶ Demo</button>
+    <button class="iconbtn hide-tv" id="btnTheme" title="Tema claro/escuro (T)">◐</button>
+    <button class="iconbtn" id="btnHelp" title="Atalhos (?)">?</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="offbanner" id="offbanner"></div>
+  <div class="searchbar" id="searchbar"><input id="search" placeholder="Filtrar tarefas por título, agente ou nota… (Esc limpa)" autocomplete="off"></div>
+  <div id="app"></div>
+</div>
+
+<footer>
+  <span><kbd>1</kbd>–<kbd>4</kbd> trocar visão</span><span><kbd>/</kbd> filtrar</span><span><kbd>[</kbd> <kbd>]</kbd> missão anterior/próxima</span>
+  <span><kbd>A</kbd> seguir a missão ativa</span><span><kbd>P</kbd> pausar</span><span><kbd>D</kbd> demo</span><span><kbd>T</kbd> tema</span><span><kbd>F</kbd> modo TV</span><span><kbd>?</kbd> ajuda</span>
+</footer>
+
+<div class="overlay" id="help" role="dialog" aria-modal="true" aria-label="Ajuda">
+  <div class="help">
+    <h2>Atalhos e comandos</h2>
+    <div style="color:var(--muted);font-size:13px">O painel acompanha, em tempo real, cada missão da equipe: a etapa atual, o que cada agente está fazendo e o histórico.</div>
+    <div class="cols">
+      <div>
+        <h3>Teclado</h3>
+        <dl>
+          <dt><kbd>1</kbd></dt><dd>Visão geral: missão, etapas, equipe e atividade</dd>
+          <dt><kbd>2</kbd></dt><dd>Tarefas em colunas (fila → concluídas)</dd>
+          <dt><kbd>3</kbd></dt><dd>Linha do tempo por agente</dd>
+          <dt><kbd>4</kbd></dt><dd>Histórico de missões</dd>
+          <dt><kbd>/</kbd></dt><dd>Filtrar tarefas</dd>
+          <dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Missão anterior / próxima</dd>
+          <dt><kbd>A</kbd></dt><dd>Voltar a seguir a missão ativa</dd>
+          <dt><kbd>P</kbd></dt><dd>Pausar / retomar atualizações</dd>
+          <dt><kbd>D</kbd></dt><dd>Ligar / desligar a demonstração</dd>
+          <dt><kbd>T</kbd></dt><dd>Tema claro / escuro</dd>
+          <dt><kbd>F</kbd></dt><dd>Modo TV (tela cheia, para telão do time)</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Fechar esta ajuda / limpar filtro</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>No Claude Code ou Codex</h3>
+        <pre>/dataengineer          Claude Code
+$dataengineer          Codex
+/dataengineer painel   só abre o painel</pre>
+        <h3 style="margin-top:14px">No terminal</h3>
+        <pre>"Abrir painel" (atalho criado na instalação)
+team_board.py ensure --open   sobe e abre
+team_board.py status          missão ativa
+team_board.py demo --live     missão simulada
+team_board.py stop            para o servidor</pre>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+window.MDE_CONFIG = /*__MDE_CONFIG__*/null;
+(function () {
+  "use strict";
+  const CFG = window.MDE_CONFIG || { mode: "file", server: "http://127.0.0.1:47821", demo: [], snapshot: null };
+  const $ = (s, el = document) => el.querySelector(s);
+  const app = $("#app");
+  const STATUS_LABEL = { running: "Em execução", queued: "Na fila", review: "Em revisão", done: "Concluída", blocked: "Bloqueada", failed: "Falhou", idle: "Disponível" };
+  const AGENT_STATUS_LABEL = { running: "Trabalhando", queued: "Na fila", review: "Em revisão", done: "Concluiu", blocked: "Bloqueado", failed: "Falhou", idle: "Disponível" };
+  const HOST_LABEL = { claude: "Claude Code", codex: "Codex" };
+  const RUN_STATUS = { active: "Em andamento", done: "Concluída", failed: "Falhou", cancelled: "Cancelada" };
+  const ui = {
+    view: localGet("mde.view") || "overview", theme: localGet("mde.theme") || "dark",
+    state: null, pinned: null, paused: false, demo: false, demoIdx: 0, demoTimer: null, filter: "",
+    offset: 0, source: null, live: false, pending: null, lastFeedTop: null,
+  };
+
+  function localGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function localSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* sem armazenamento */ } }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function nowMs() { return Date.now() + ui.offset; }
+  function t(ts) { return ts ? Date.parse(ts) : null; }
+  function hhmm(ts) { if (!ts) return "—"; const d = new Date(t(ts)); return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }); }
+  function dmy(ts) { if (!ts) return "—"; const d = new Date(t(ts)); return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + " " + hhmm(ts); }
+  function dur(ms) {
+    if (ms == null || isNaN(ms)) return "—"; ms = Math.max(0, ms); const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+    if (h) return h + "h " + String(m).padStart(2, "0") + "m"; if (m) return m + "m " + String(r).padStart(2, "0") + "s"; return r + "s";
+  }
+  function toast(msg) { const el = $("#toast"); el.textContent = msg; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 1800); }
+  function meta(key) { return (ui.state && ui.state.agents_meta || []).find(a => a.key === key) || { key, name: key, short: "?", color: "#64748b", role: "" }; }
+  function av(key, cls = "av") { const m = meta(key); return `<span class="${cls}" style="background:${esc(m.color)}">${esc(m.short)}</span>`; }
+
+  /* ---------- tema e visão ---------- */
+  function applyTheme() { document.documentElement.dataset.theme = ui.theme; }
+  function setView(v) {
+    ui.view = v; localSet("mde.view", v);
+    document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === v));
+    render();
+  }
+
+  /* ---------- conexão ---------- */
+  function setConn(kind, text) { const el = $("#conn"); el.className = "pill " + kind; $("#connText").textContent = text; }
+  function receive(state) {
+    if (!state) return;
+    if (ui.paused) { ui.pending = state; return; }
+    ui.state = state;
+    ui.offset = t(state.now) - Date.now();
+    render();
+  }
+  function streamUrl(base) { return base + "/api/stream" + (ui.pinned ? "?run=" + encodeURIComponent(ui.pinned) : ""); }
+  function connectLive(base) {
+    if (ui.source) ui.source.close();
+    if (!window.EventSource) { poll(base); return; }
+    const es = new EventSource(streamUrl(base));
+    ui.source = es;
+    es.addEventListener("state", ev => { ui.live = true; if (!ui.demo) { setConn(ui.paused ? "paused" : "live", ui.paused ? "Pausado" : "Ao vivo"); receive(JSON.parse(ev.data)); } });
+    es.onerror = () => { ui.live = false; if (!ui.demo) setConn("off", "Reconectando…"); };
+  }
+  function poll(base) {
+    const go = () => fetch(base + "/api/state" + (ui.pinned ? "?run=" + encodeURIComponent(ui.pinned) : ""))
+      .then(r => r.json()).then(s => { ui.live = true; if (!ui.demo) { setConn("live", "Ao vivo"); receive(s); } })
+      .catch(() => { if (!ui.demo) setConn("off", "Sem conexão"); }).finally(() => setTimeout(go, 2000));
+    go();
+  }
+  function reconnect() { if (CFG.mode === "live") connectLive(""); }
+
+  function startDemo() {
+    const begin = frames => {
+      if (!frames || !frames.length) { toast("Demonstração indisponível"); return; }
+      ui.demo = true; ui.demoIdx = 0; $("#btnDemo").classList.add("on"); $("#btnDemo").textContent = "■ Demo";
+      setConn("demo", "Demonstração");
+      const step = () => {
+        if (!ui.demo) return;
+        if (!ui.paused) { ui.state = frames[ui.demoIdx]; ui.offset = t(ui.state.now) - Date.now(); render(); ui.demoIdx++; }
+        const end = ui.demoIdx >= frames.length;
+        if (end) ui.demoIdx = 0;
+        ui.demoTimer = setTimeout(step, end ? 5000 : 1500);
+      };
+      step();
+    };
+    if (CFG.demo && CFG.demo.length) begin(CFG.demo);
+    else fetch("/api/demo").then(r => r.json()).then(begin).catch(() => toast("Demonstração indisponível"));
+  }
+  function stopDemo() {
+    ui.demo = false; clearTimeout(ui.demoTimer); $("#btnDemo").classList.remove("on"); $("#btnDemo").textContent = "▶ Demo";
+    if (CFG.mode === "live") { setConn(ui.live ? "live" : "off", ui.live ? "Ao vivo" : "Reconectando…"); reconnect(); }
+    else { setConn("off", "Offline"); ui.state = CFG.snapshot; render(); }
+  }
+
+  /* ---------- renderização ---------- */
+  function render() {
+    const s = ui.state;
+    const run = s && s.run;
+    if (!run) { app.innerHTML = emptyState(); bindEmpty(); return; }
+    let html = missionBlock(run);
+    if (ui.view === "overview") html += overview(run);
+    else if (ui.view === "tasks") html += kanban(run);
+    else if (ui.view === "timeline") html += timeline(run);
+    else html += history(s, run);
+    const feedEl = $(".feed"); const scroll = feedEl ? feedEl.scrollTop : 0;
+    app.innerHTML = html;
+    const nf = $(".feed"); if (nf) nf.scrollTop = scroll;
+    bindHistory(); tick();
+  }
+
+  function emptyState() {
+    return `<div class="emptystate">
+      <svg width="56" height="56" viewBox="0 0 32 32"><path d="M16 2 29 9.5v13L16 30 3 22.5v-13z" fill="var(--accent)"/><path d="M10 12h12M10 16h12M10 20h8" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <h2>Nenhuma missão por enquanto</h2>
+      <p>Acione a equipe com <code>/dataengineer</code> no Claude Code ou <code>$dataengineer</code> no Codex.</p>
+      <p>Assim que o modo de trabalho for escolhido, a missão aparece aqui e cada agente mostra, ao vivo, a tarefa em que está trabalhando.</p>
+      <button class="btn" id="emptyDemo">Ver uma missão de demonstração (D)</button>
+    </div>`;
+  }
+  function bindEmpty() { const b = $("#emptyDemo"); if (b) b.onclick = startDemo; }
+
+  function missionBlock(run) {
+    const c = run.counts || {}; const pct = Math.round((run.progress || 0) * 100);
+    const active = (run.agents || []).filter(a => a.key !== "coordinator" && ["running", "review"].includes(a.status)).length;
+    const pinnedNote = ui.pinned ? ` · <a href="#" id="unpin" style="color:var(--accent)">seguir a ativa (A)</a>` : "";
+    const end = run.ended ? `<span>Encerrada <b>${hhmm(run.ended)}</b></span>` : "";
+    const steps = run.stages.map((st, i) => {
+      const sub = st.status === "running" ? `<span data-since="${esc(st.started)}">—</span>` :
+        st.status === "done" ? (st.note ? esc(st.note) : (st.started && st.ended && t(st.ended) > t(st.started) ? dur(t(st.ended) - t(st.started)) : "ok")) :
+        st.status === "failed" ? "interrompida" : "pendente";
+      return `<div class="step ${st.status}" title="${esc(st.note || st.label)}"><div class="n">${st.status === "done" ? "✓" : String(i + 1).padStart(2, "0")}</div><div class="l">${esc(st.label)}</div><div class="s">${sub}</div></div>`;
+    }).join("");
+    return `<section class="mission">
+      <div>
+        <div class="mtitle"><span class="badge b-${esc(run.mode)}">${esc(run.mode_label)}</span><h1>${esc(run.title)}</h1>
+          <span class="chip s-${run.status === "active" ? "running" : run.status === "done" ? "done" : "failed"}">${esc(RUN_STATUS[run.status] || run.status)}</span></div>
+        <div class="meta">
+          ${run.project ? `<span>Projeto <b>${esc(run.project)}</b></span>` : ""}
+          ${run.host ? `<span>Host <b>${esc(HOST_LABEL[run.host] || run.host)}</b></span>` : ""}
+          <span>Início <b>${dmy(run.started)}</b></span>${end}
+          <span>Duração <b data-since="${esc(run.started)}" ${run.ended ? `data-until="${esc(run.ended)}"` : ""}>—</b></span>${pinnedNote}
+        </div>
+        <div class="prog"><div class="bar"><i style="width:${pct}%"></i></div><span>${pct}%</span></div>
+        ${run.summary ? `<div class="meta" style="margin-top:10px"><span>Resultado: <b>${esc(run.summary)}</b></span></div>` : ""}
+      </div>
+      <div class="kpis">
+        ${kpi("running", "Em execução", c.running)}${kpi("review", "Em revisão", c.review)}${kpi("blocked", "Bloqueadas", (c.blocked || 0) + (c.failed || 0))}${kpi("done", "Concluídas", c.done)}
+        <div class="kpi"><small><span class="dot" style="background:var(--accent)"></span>Agentes ativos</small><b>${active}<span style="font-size:13px;color:var(--faint)">/8</span></b></div>
+      </div>
+    </section>
+    <section class="steps">${steps}</section>`;
+  }
+  function kpi(st, label, n) { return `<div class="kpi"><small><span class="dot" style="background:var(--${st})"></span>${label}</small><b>${n || 0}</b></div>`; }
+
+  function overview(run) {
+    const cards = run.agents.map(a => {
+      const sinceAttr = a.since && ["running", "review", "blocked", "queued"].includes(a.status) ? `<span data-since="${esc(a.since)}">—</span>` : `<span>${a.since ? hhmm(a.since) : ""}</span>`;
+      const task = a.task_title ? esc(a.task_title) : (a.key === "coordinator" ? "" : "Sem tarefa nesta missão");
+      return `<div class="agent ${a.status}">
+        <div class="ahead">${av(a.key)}<div class="aname"><b>${esc(a.name)}</b><small>${esc(a.role)}</small></div><span class="chip s-${a.status}">${AGENT_STATUS_LABEL[a.status] || a.status}</span></div>
+        <div class="atask ${a.task_title ? "" : "empty"}">${a.task_id ? `<span style="font:11px var(--mono);color:var(--faint)">${esc(a.task_id)}</span> ` : ""}${task}</div>
+        <div class="afoot">${sinceAttr}<span>${a.total ? `${a.done}/${a.total} concluídas` : ""}</span></div>
+      </div>`;
+    }).join("");
+    const feed = run.feed.map(f => `<div class="fi"><time>${hhmm(f.ts)}</time><span class="dot" style="background:${f.status ? `var(--${f.status})` : f.kind === "stage" ? "var(--accent)" : "var(--faint)"}"></span>
+      <p><b>${esc(meta(f.agent).name)}</b> · ${esc(f.text)}</p></div>`).join("") || `<div class="empty-col">Sem atividade ainda</div>`;
+    return `<div class="grid">
+      <section class="card"><h2>Equipe <span class="cnt">quem está fazendo o quê agora</span></h2><div class="team">${cards}</div></section>
+      <section class="card"><h2>Atividade ao vivo <span class="cnt">${run.feed.length} eventos</span></h2><div class="feed">${feed}</div></section>
+    </div>`;
+  }
+
+  function matches(task) {
+    if (!ui.filter) return true;
+    const q = ui.filter.toLowerCase();
+    return [task.title, task.note, task.id, meta(task.agent).name].some(v => String(v || "").toLowerCase().includes(q));
+  }
+  function kanban(run) {
+    const cols = [["queued", "Na fila"], ["running", "Em execução"], ["review", "Em revisão"], ["blocked", "Bloqueadas / falhas"], ["done", "Concluídas"]];
+    const tasks = run.tasks.filter(matches);
+    return `<section class="kanban">${cols.map(([st, label]) => {
+      const list = tasks.filter(x => st === "blocked" ? ["blocked", "failed"].includes(x.status) : x.status === st)
+        .sort((a, b) => (t(b.updated) || 0) - (t(a.updated) || 0));
+      const items = list.map(x => {
+        const m = meta(x.agent);
+        const time = x.status === "done" && x.started ? dur(t(x.ended) - t(x.started)) :
+          x.started ? `<span data-since="${esc(x.started)}">—</span>` : "aguardando";
+        return `<div class="task" style="--c:${esc(m.color)}"><div class="tt">${esc(x.title)}</div>
+          <div class="tm">${av(x.agent)}<span>${esc(m.name)}</span><span>·</span><span>${time}</span><span class="id">${esc(x.id)}</span></div>
+          ${x.note ? `<div class="tn">${esc(x.note)}</div>` : ""}</div>`;
+      }).join("") || `<div class="empty-col">Nada aqui</div>`;
+      return `<div class="col"><h3><span class="chip s-${st}">${label}</span><em>${list.length}</em></h3><div class="list">${items}</div></div>`;
+    }).join("")}</section>`;
+  }
+
+  function timeline(run) {
+    const start = t(run.started); const end = run.ended ? t(run.ended) : nowMs();
+    const span = Math.max(end - start, 60000);
+    const pos = ms => Math.min(100, Math.max(0, (ms - start) / span * 100));
+    const ticks = [0, .25, .5, .75, 1].map(f => `<span style="left:${f * 100}%">${new Date(start + span * f).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>`).join("");
+    const tasks = run.tasks.filter(matches);
+    const lanes = run.agents.filter(a => a.key !== "coordinator").map(a => {
+      const mine = tasks.filter(x => x.agent === a.key && (x.started || x.status !== "queued"));
+      const segs = mine.map(x => {
+        const s = t(x.started || x.created); const e = x.ended ? t(x.ended) : end;
+        const left = pos(s); const width = Math.max(.6, pos(e) - left);
+        const color = x.status === "done" ? meta(a.key).color : `var(--${x.status})`;
+        return `<div class="seg ${x.status}" style="left:${left}%;width:${width}%;background-color:${color}" title="${esc(x.id + " · " + x.title + " · " + (STATUS_LABEL[x.status] || x.status))}">${esc(x.title)}</div>`;
+      }).join("");
+      return `<div class="lane"><div class="who">${av(a.key)}<b>${esc(a.name)}</b></div><div class="track">${segs}${run.ended ? "" : `<div class="nowline" style="left:${pos(end)}%"></div>`}</div></div>`;
+    }).join("");
+    return `<section class="card" style="margin-top:16px"><h2>Linha do tempo <span class="cnt">cada barra é uma tarefa; listras = em execução</span></h2>
+      <div class="tl"><div class="axis">${ticks}</div>${lanes}</div></section>`;
+  }
+
+  function history(s, run) {
+    const rows = s.runs.map(r => {
+      const pct = Math.round((r.progress || 0) * 100);
+      const d = r.ended ? dur(t(r.ended) - t(r.started)) : `<span data-since="${esc(r.started)}">—</span>`;
+      return `<tr data-run="${esc(r.id)}" class="${r.id === run.id ? "sel" : ""}"><td><span class="badge b-${esc(r.mode)}">${esc(r.mode_label)}</span></td>
+        <td>${esc(r.title)}</td><td>${esc(r.project || "—")}</td><td>${esc(HOST_LABEL[r.host] || r.host || "—")}</td><td>${dmy(r.started)}</td><td>${d}</td>
+        <td><span class="mini"><i style="width:${pct}%"></i></span>${pct}%</td>
+        <td><span class="chip s-${r.status === "active" ? "running" : r.status === "done" ? "done" : "failed"}">${esc(RUN_STATUS[r.status] || r.status)}</span></td>
+        <td style="font:12px var(--mono);color:var(--muted)">${r.counts.done || 0}/${Object.values(r.counts).reduce((a, b) => a + b, 0)}</td></tr>`;
+    }).join("");
+    return `<section class="card" style="margin-top:16px"><h2>Histórico de missões <span class="cnt">clique para abrir · ${s.runs.length} missões</span></h2>
+      <div style="overflow:auto"><table><thead><tr><th>Modo</th><th>Missão</th><th>Projeto</th><th>Host</th><th>Início</th><th>Duração</th><th>Progresso</th><th>Status</th><th>Tarefas</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+  }
+  function bindHistory() {
+    document.querySelectorAll("tr[data-run]").forEach(tr => tr.onclick = () => pin(tr.dataset.run));
+    const u = $("#unpin"); if (u) u.onclick = e => { e.preventDefault(); pin(null); };
+  }
+  function pin(id) {
+    if (ui.demo) { toast("Desligue a demonstração para navegar no histórico"); return; }
+    ui.pinned = id; if (CFG.mode === "live") reconnect();
+    else if (ui.state) { toast("Abra pelo servidor para navegar no histórico"); }
+    if (id) { setView("overview"); toast("Missão fixada · A volta para a ativa"); } else toast("Seguindo a missão ativa");
+  }
+  function stepRun(dir) {
+    if (!ui.state || !ui.state.runs.length) return;
+    const ids = ui.state.runs.map(r => r.id); const cur = ui.state.run ? ids.indexOf(ui.state.run.id) : 0;
+    const next = ids[Math.min(ids.length - 1, Math.max(0, cur + dir))];
+    if (next && next !== (ui.state.run && ui.state.run.id)) pin(next);
+  }
+
+  function tick() {
+    const n = nowMs();
+    document.querySelectorAll("[data-since]").forEach(el => {
+      const until = el.dataset.until ? t(el.dataset.until) : n;
+      el.textContent = dur(until - t(el.dataset.since));
+    });
+    $("#clock").textContent = new Date().toLocaleTimeString("pt-BR");
+  }
+
+  /* ---------- teclado ---------- */
+  function toggleHelp(on) { $("#help").classList.toggle("on", on); }
+  document.addEventListener("keydown", e => {
+    const typing = e.target.tagName === "INPUT";
+    if (e.key === "Escape") { toggleHelp(false); if (typing || ui.filter) { $("#search").value = ""; ui.filter = ""; $("#searchbar").classList.remove("on"); $("#search").blur(); render(); } return; }
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    const views = { "1": "overview", "2": "tasks", "3": "timeline", "4": "history" };
+    if (views[k]) setView(views[k]);
+    else if (k === "/") { e.preventDefault(); $("#searchbar").classList.add("on"); $("#search").focus(); if (ui.view === "overview" || ui.view === "history") setView("tasks"); }
+    else if (k === "?") toggleHelp(!$("#help").classList.contains("on"));
+    else if (k === "t") { ui.theme = ui.theme === "dark" ? "light" : "dark"; localSet("mde.theme", ui.theme); applyTheme(); }
+    else if (k === "d") { ui.demo ? stopDemo() : startDemo(); }
+    else if (k === "p") { ui.paused = !ui.paused; if (!ui.paused && ui.pending) { const p = ui.pending; ui.pending = null; receive(p); } setConn(ui.paused ? "paused" : ui.demo ? "demo" : ui.live ? "live" : "off", ui.paused ? "Pausado" : ui.demo ? "Demonstração" : ui.live ? "Ao vivo" : "Offline"); }
+    else if (k === "f") { document.body.classList.toggle("tv"); if (document.body.classList.contains("tv")) { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); } else if (document.fullscreenElement) document.exitFullscreen(); }
+    else if (k === "a") pin(null);
+    else if (k === "[") stepRun(1);
+    else if (k === "]") stepRun(-1);
+  });
+  $("#search").addEventListener("input", e => { ui.filter = e.target.value.trim(); render(); });
+  document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => setView(b.dataset.view));
+  $("#btnTheme").onclick = () => { ui.theme = ui.theme === "dark" ? "light" : "dark"; localSet("mde.theme", ui.theme); applyTheme(); };
+  $("#btnDemo").onclick = () => ui.demo ? stopDemo() : startDemo();
+  $("#btnHelp").onclick = () => toggleHelp(true);
+  $("#help").onclick = e => { if (e.target.id === "help") toggleHelp(false); };
+
+  /* ---------- início ---------- */
+  applyTheme(); setView(ui.view); setInterval(tick, 1000); tick();
+  const params = new URLSearchParams(location.search);
+  if (params.get("theme")) { ui.theme = params.get("theme"); applyTheme(); }
+  if (params.get("view")) setView(params.get("view"));
+  if (CFG.mode === "live") {
+    connectLive("");
+    if (params.get("demo") === "1") startDemo();
+  } else {
+    // Arquivo local: se o servidor estiver no ar, vai para ele; senão mostra a última foto e a demonstração.
+    const server = CFG.server || "http://127.0.0.1:47821";
+    fetch(server + "/api/health").then(r => r.json()).then(h => {
+      if (h && h.app === "master-data-engineer") location.replace(server + location.search);
+      else throw new Error("outro app");
+    }).catch(() => {
+      setConn("off", "Offline");
+      const ob = $("#offbanner"); ob.classList.add("on");
+      ob.innerHTML = `O servidor do painel não está rodando, então esta é a última foto salva${CFG.demo && CFG.demo.length ? " (ou a demonstração, tecla <b>D</b>)" : ""}. Para acompanhar ao vivo, use o atalho <b>Abrir painel</b> na pasta MasterDataEngineer ou acione <code>/dataengineer</code>: a equipe sobe o painel sozinha.`;
+      ui.state = CFG.snapshot && CFG.snapshot.run ? CFG.snapshot : null;
+      render();
+      if (!ui.state || params.get("demo") === "1") startDemo();
+    });
+  }
+})();
+</script>
+</body>
+</html>

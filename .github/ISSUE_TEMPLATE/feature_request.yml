@@ -1,0 +1,19 @@
+name: Sugerir uma melhoria
+description: Ideia para a equipe, os agentes ou o painel.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema de Engenharia de Dados isso resolve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options: [Skill coordenadora, Agentes, Painel da equipe, Memória contextual, Instalador, Documentação]

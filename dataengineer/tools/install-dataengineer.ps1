@@ -1,89 +1,21 @@
+# Compatibilidade com a v0.2.0. O instalador agora fica na raiz do repositório:
+#   irm https://raw.githubusercontent.com/carlos-dataengineer/master-data-engineer/main/install.ps1 | iex
+# Este script repassa os parâmetros antigos para ele.
 [CmdletBinding()]
 param(
     [ValidateSet('User','Project')]
     [string]$Scope = 'User',
     [string]$ProjectPath,
-    [switch]$InstallClaude = $true,
-    [switch]$InstallCodex = $true,
     [switch]$Overwrite
 )
-
 $ErrorActionPreference = 'Stop'
-$PackageRoot = Split-Path -Parent $PSScriptRoot
-$SkillSource = Join-Path $PackageRoot 'skills\dataengineer'
-$ClaudeAgentsSource = Join-Path $PackageRoot 'agents'
-$CodexAgentsSource = Join-Path $PackageRoot '.codex\agents'
-
-if (-not (Test-Path (Join-Path $SkillSource 'SKILL.md'))) {
-    throw "Não encontrei a skill em $SkillSource"
-}
-
-if (-not (Test-Path $ClaudeAgentsSource -PathType Container)) {
-    throw "Não encontrei os perfis de agentes Claude Code em $ClaudeAgentsSource"
-}
-if (-not (Test-Path $CodexAgentsSource -PathType Container)) {
-    throw "Não encontrei os perfis de agentes Codex em $CodexAgentsSource"
-}
-if (@(Get-ChildItem -LiteralPath $ClaudeAgentsSource -Filter '*.md' -File).Count -eq 0) {
-    throw "Nenhum perfil de agente Claude Code foi encontrado em $ClaudeAgentsSource"
-}
-if (@(Get-ChildItem -LiteralPath $CodexAgentsSource -Filter '*.toml' -File).Count -eq 0) {
-    throw "Nenhum perfil de agente Codex foi encontrado em $CodexAgentsSource"
-}
-
+$Root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$Installer = Join-Path $Root 'install.ps1'
+if (-not (Test-Path $Installer)) { throw "Não encontrei $Installer. Clone o repositório completo." }
+$params = @{}
+if ($Overwrite) { $params['Force'] = $true }
 if ($Scope -eq 'Project') {
-    if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
-        throw 'Informe -ProjectPath quando usar -Scope Project.'
-    }
-    $Root = [System.IO.Path]::GetFullPath($ProjectPath)
-    if (-not (Test-Path $Root)) { throw "A pasta do projeto não existe: $Root" }
-    $ClaudeSkills = Join-Path $Root '.claude\skills'
-    $ClaudeAgents = Join-Path $Root '.claude\agents'
-    $CodexSkills = Join-Path $Root '.agents\skills'
-    $CodexAgents = Join-Path $Root '.codex\agents'
-} else {
-    $Home = $HOME
-    $ClaudeSkills = Join-Path $Home '.claude\skills'
-    $ClaudeAgents = Join-Path $Home '.claude\agents'
-    $CodexSkills = Join-Path $Home '.agents\skills'
-    $CodexAgents = Join-Path $Home '.codex\agents'
+    if ([string]::IsNullOrWhiteSpace($ProjectPath)) { throw 'Informe -ProjectPath quando usar -Scope Project.' }
+    $params['Project'] = $ProjectPath
 }
-
-function Copy-PackageDirectory([string]$Source, [string]$Destination) {
-    if (Test-Path $Destination) {
-        if (-not $Overwrite) {
-            Write-Host "PULADO (já existe; use -Overwrite para substituir): $Destination" -ForegroundColor Yellow
-            return
-        }
-        Remove-Item -LiteralPath $Destination -Recurse -Force
-    }
-    New-Item -ItemType Directory -Path (Split-Path -Parent $Destination) -Force | Out-Null
-    Copy-Item -LiteralPath $Source -Destination $Destination -Recurse
-    Write-Host "INSTALADO: $Destination" -ForegroundColor Green
-}
-
-function Copy-AgentFiles([string]$SourceDirectory, [string]$DestinationDirectory) {
-    New-Item -ItemType Directory -Path $DestinationDirectory -Force | Out-Null
-    Get-ChildItem -LiteralPath $SourceDirectory -File | ForEach-Object {
-        $target = Join-Path $DestinationDirectory $_.Name
-        if ((Test-Path $target) -and (-not $Overwrite)) {
-            Write-Host "PULADO (agente já existe; use -Overwrite para substituir): $target" -ForegroundColor Yellow
-        } else {
-            Copy-Item -LiteralPath $_.FullName -Destination $target -Force
-            Write-Host "INSTALADO: $target" -ForegroundColor Green
-        }
-    }
-}
-
-if ($InstallClaude) {
-    Copy-PackageDirectory $SkillSource (Join-Path $ClaudeSkills 'dataengineer')
-    Copy-AgentFiles $ClaudeAgentsSource $ClaudeAgents
-}
-if ($InstallCodex) {
-    Copy-PackageDirectory $SkillSource (Join-Path $CodexSkills 'dataengineer')
-    Copy-AgentFiles $CodexAgentsSource $CodexAgents
-}
-
-Write-Host ''
-Write-Host 'Instalação concluída. Claude Code: /dataengineer | Codex: $dataengineer ou /skills.' -ForegroundColor Cyan
-Write-Host 'Reinicie/abra uma sessão nova do agente para recarregar skills e agentes.'
+& $Installer @params
